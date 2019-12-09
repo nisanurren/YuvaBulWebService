@@ -11,39 +11,29 @@ import (
 
 var AppDB *gorm.DB
 
-
 type User struct {
-	UserID   int   `json:"user_id" `
-	Mail    string `json:"mail" `
+	UserID   int    `json:"user_id" `
+	Mail     string `json:"mail" `
 	Name     string `json:"name" `
 	Surname  string `json:"surname" `
 	Password string `json:"password" `
-
 }
-
 
 func main() {
 
 	var err error
-	AppDB, err := gorm.Open("mysql", "***********************************")
+	AppDB, err := gorm.Open("mysql", "root:Nisanur77.@/yuvadb?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		panic("Failed to connect database" + err.Error())
 	}
 	defer AppDB.Close()
 
-
-	r:=gin.Default()
-	r.GET("/asasa", func(context *gin.Context) {
-		context.JSON(200,gin.H{
-			"message":"hello",
-
-		})
-	})
+	r := gin.Default()
 
 	r.GET("/getAllUsers", func(context *gin.Context) {
-		var users[] User
+		var users []User
 		AppDB.Find(&users)
-		context.JSON(200,users)
+		context.JSON(200, users)
 
 	})
 
@@ -52,30 +42,36 @@ func main() {
 		mail := context.Params.ByName("mail")
 
 		AppDB.Where("mail = ?", mail).First(&users)
-		context.JSON(200,users)
+		context.JSON(200, users)
 	})
 
 	r.POST("/SignUpUser", func(context *gin.Context) {
-		user:=User{}
-		user.Password=context.Params.ByName("mail")
+		user := User{}
+		user.Mail = context.PostForm("mail")
+		user.Name = context.PostForm("name")
+		user.Surname = context.PostForm("surname")
+		user.Password = context.PostForm("password")
+
+		AppDB.Create(user)
+		context.JSON(200, user)
+
 	})
 
 	r.GET("SignInControl/:mail/:password", func(context *gin.Context) {
 		mail := context.Params.ByName("mail")
 		password := context.Params.ByName("password")
-		user:=User{}
+		user := User{}
 		AppDB.Where(map[string]interface{}{"mail": mail, "password": password}).Find(&user)
-		if(user.Password!=""){
-			context.JSON(200,user)
+		if user.Password != "" {
+			context.JSON(200, user)
 			log.Print("kullanıcı bulundu...")
 		} else {
 			log.Println("kullanıcı bulunamadı")
+			context.JSON(404, "kullanıcı yok")
 		}
-
 
 	})
 
-
-r.Run(":8080")
+	r.Run(":8080")
 
 }
