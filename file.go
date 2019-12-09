@@ -22,7 +22,7 @@ type User struct {
 func main() {
 
 	var err error
-	AppDB, err := gorm.Open("mysql", "root:Nisanur77.@/yuvadb?charset=utf8&parseTime=True&loc=Local")
+	AppDB, err := gorm.Open("mysql", "root:**************************************")
 	if err != nil {
 		panic("Failed to connect database" + err.Error())
 	}
