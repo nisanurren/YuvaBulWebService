@@ -19,10 +19,19 @@ type User struct {
 	Password string `json:"password" `
 }
 
+type Post struct {
+	PostId            int    `json:"post_id" `
+	Kind              string `json:"kind" `
+	PostDescription   string `json:"post_description" `
+	CreatorMail       string `json:"creator_mail" `
+	City              string `json:"city" `
+	Base64ImageString string `json:"base64_image_string" `
+}
+
 func main() {
 
 	var err error
-	AppDB, err := gorm.Open("mysql", "root:**************************************")
+	AppDB, err := gorm.Open("mysql", "******************************")
 	if err != nil {
 		panic("Failed to connect database" + err.Error())
 	}
@@ -70,6 +79,26 @@ func main() {
 			context.JSON(404, "kullanıcı yok")
 		}
 
+	})
+
+	r.POST("/CreatePost", func(context *gin.Context) {
+		post := Post{}
+
+		post.CreatorMail = context.PostForm("creator_mail")
+		post.Kind = context.PostForm("kind")
+		post.City = context.PostForm("city")
+		post.Base64ImageString = context.PostForm("base64_image_string")
+		post.PostDescription = context.PostForm("post_description")
+
+		AppDB.Create(post)
+		context.JSON(200, post)
+
+	})
+
+	r.GET("/GetAllPosts", func(context *gin.Context) {
+		var posts []Post
+		AppDB.Find(&posts)
+		context.JSON(200, posts)
 	})
 
 	r.Run(":8080")
