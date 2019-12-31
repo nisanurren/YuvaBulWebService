@@ -31,7 +31,7 @@ type Post struct {
 func main() {
 
 	var err error
-	AppDB, err := gorm.Open("mysql", "******************************")
+	AppDB, err := gorm.Open("mysql", "root:Nisanur77.@/yuvadb?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		panic("Failed to connect database" + err.Error())
 	}
@@ -70,13 +70,18 @@ func main() {
 		mail := context.Params.ByName("mail")
 		password := context.Params.ByName("password")
 		user := User{}
+		if mail == "" {
+			context.JSON(400, "400 : Bad Request")
+		} else if password == "" {
+			context.JSON(400, "400 : Bad Request")
+		}
 		AppDB.Where(map[string]interface{}{"mail": mail, "password": password}).Find(&user)
 		if user.Password != "" {
 			context.JSON(200, user)
 			log.Print("kullanıcı bulundu...")
 		} else {
 			log.Println("kullanıcı bulunamadı")
-			context.JSON(404, "kullanıcı yok")
+			context.JSON(404, "404 : Not Found")
 		}
 
 	})
@@ -90,8 +95,14 @@ func main() {
 		post.Base64ImageString = context.PostForm("base64_image_string")
 		post.PostDescription = context.PostForm("post_description")
 
-		AppDB.Create(post)
-		context.JSON(200, post)
+		if post.PostDescription == "" {
+			context.JSON(400, "Bad Request.")
+		} else {
+
+			AppDB.Create(post)
+			context.JSON(201, post)
+
+		}
 
 	})
 
